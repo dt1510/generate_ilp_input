@@ -3,6 +3,7 @@
 //Takes as input arguments a universal learning problem.
 
 $learning_problem_file=$argv[1];
+$learning_problem_name=basename($learning_problem_file,".pl");
 $learning_problem=file_get_contents($learning_problem_file);
 
 $lines=split("\n",$learning_problem);
@@ -10,7 +11,6 @@ $lines=split("\n",$learning_problem);
 
 $ilp_system="progol";
 $system="";$type="";$background="";$positive="";$negative="";
-$output="";
 $system=init_script($ilp_system);
 $part="system";
 for($i=0; $i<count($lines); $i++) {
@@ -25,19 +25,33 @@ for($i=0; $i<count($lines); $i++) {
     }
     
     switch($part) {
-        case "system": $system.=convert_system($lines[$i],$ilp_system);break;
-        case "type": $type.=convert_type($lines[$i],$ilp_system);break;
-        case "background": $background.=convert_background($lines[$i]);break;
-        case "positive": $positive.=convert_positive($lines[$i]);break;
-        case "negative": $negative.=convert_negative($lines[$i]);break;
+        case "system": $system.=convert_system($ilp_system,$lines[$i]);break;
+        case "type": $type.=convert_type($ilp_system,$lines[$i]);break;
+        case "background": $background.=convert_background($ilp_system,$lines[$i]);break;
+        case "positive": $positive.=convert_positive($ilp_system,$lines[$i]);break;
+        case "negative": $negative.=convert_negative($ilp_system,$lines[$i]);break;
     }
 }
 
 
+output_learning_problem($learning_problem_name, $ilp_system, $system, $type, $background, $positive, $negative);
 
-echo "positive $positive";
-echo count($lines);
-echo "\n";
+function output_learning_problem($learning_problem_name, $ilp_system, $system, $type, $background, $positive, $negative) {
+    switch($ilp_system) {
+        case "progol":break;
+    }        
+    
+    //canonical output
+    $data="%$learning_problem_name\n";
+    $data.=$system.$type;
+    $data.=$background;
+    $data.=$positive;
+    $data.=$negative;
+    echo $data;
+    //file_put_contents($ilp_system."_".$learning_problem_name.".pl", $data);
+}
+
+
 
 function init_script($ilp_system) {
     switch($ilp_system) {
@@ -47,37 +61,46 @@ function init_script($ilp_system) {
     }
 }
 
-function convert_system($line, $ilp_system) {
+function convert_system($ilp_system, $line) {
     switch($ilp_system) {
         case "progol":
-            $line=preg_replace("modeh(",":-modeh(",$line);
-            $line=preg_replace("modeb(",":-modeb(",$line);
-            return ":- set(i,2), set(h,20), set(c,2)?\n";
+            $line=preg_replace("/[.]/","?",$line);            
+            $line=preg_replace("/modeh\(/", ":-modeh(",$line);
+            $line=preg_replace("/modeb\(/", ":-modeb(",$line);
+            $line=preg_replace("/determination\(/", ":-determination(",$line);
+            return $line."\n";
         break;
     }
-    return $line;
+    return $line."\n";
 }
 
-function convert_type($line, $ilp_system) {
+function convert_type($ilp_system, $line) {
+    //all ILP systems specify the type information in the same way.  
+    return $line."\n";
+}
+
+function convert_background($ilp_system, $line) {
+    //all ILP systems have the background knowledge specified in the same way.
+    return $line."\n";
+}
+
+function convert_positive($ilp_system, $line) {
+    switch($ilp_system) {
+        case "progol":break;
+    }
+    return $line."\n";
+}
+
+function convert_negative($ilp_system, $line) {
     switch($ilp_system) {
         case "progol":
-            return "";
+            if(preg_match("/^[a-zA-Z]/",$line)) {
+                $line=":-".$line;
+            }                   
+            return $line."\n";
         break;
     }
-    return $line;
+    return $line."\n";
 }
-
-function convert_background($line, $ilp_system) {
-    return $line;
-}
-
-function convert_positive($line, $ilp_system) {
-    return $line;
-}
-
-function convert_negative($line, $ilp_system) {
-    return $line;
-}
-
 
 ?>
