@@ -9,7 +9,7 @@ $learning_problem=file_get_contents($learning_problem_file);
 $lines=split("\n",$learning_problem);
 //A learning problem should be divided into parts: system, types declarations, background knowledge, positive examples, negative examples
 
-$ilp_system="toplog";
+$ilp_system="progol";
 $system="";$type="";$background="";$positive="";$negative="";
 $system=init_script($ilp_system);
 $part="system";
@@ -96,6 +96,11 @@ function convert_background($ilp_system, $line) {
 function convert_positive($ilp_system, $line) {
     switch($ilp_system) {
         case "progol":break;
+        case "toplog":
+            if(contains_example($line)) {
+                return toplog_positive($line);
+            }
+        break;            
     }
     return $line."\n";
 }
@@ -106,7 +111,9 @@ function convert_negative($ilp_system, $line) {
             return progol_negative($line);
         break;
         case "toplog":
-            return toplog_negative($line);
+            if(contains_example($line)) {
+                return toplog_negative($line);
+            }
         break;
     }
     return $line."\n";
@@ -119,20 +126,17 @@ function progol_negative($line) {
     return $line."\n"; 
 }
 
-function toplog_positive($line) {
-    return toplog_example($line,1);
+function toplog_positive($example) {
+    return toplog_example($example,1);
 }
 
-function toplog_negative($line) {
-    return toplog_example($line,-1);
+function toplog_negative($example) {
+    return toplog_example($example,-1);
 }
 
-function toplog_example($line,$weight) {
-    if(contains_example($line)) {
-        $example=preg_replace("/[.]/","?",$line);  
-        return "example($example,$weight).\n";
-    } else
-        return "";
+function toplog_example($example,$weight) {
+    $example=preg_replace("/[.]/","",$example);  
+    return "example($example,$weight).\n";
 }
 
 function contains_example($line) {
