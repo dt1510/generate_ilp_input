@@ -16,10 +16,12 @@ male(adam).
 male(bob).
 female(alice).
 female(mary).
+female(susan).
 
 %positive examples
 woman(alice).
 woman(mary).
+woman(susan).
 
 %negative examples
 woman(adam).

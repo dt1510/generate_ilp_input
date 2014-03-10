@@ -1,4 +1,4 @@
-%test
+%progol, test
 :- set(i,2), set(h,20), set(c,2)?
 :-modeh(*,woman(+person))?
 :-modeb(*,female(+person))?
@@ -18,10 +18,12 @@ male(adam).
 male(bob).
 female(alice).
 female(mary).
+female(susan).
 
 %positive examples
 woman(alice).
 woman(mary).
+woman(susan).
 
 %negative examples
 :-woman(adam).
