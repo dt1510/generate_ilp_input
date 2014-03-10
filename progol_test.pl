@@ -1,5 +1,6 @@
 %progol, test
 :- set(i,2), set(h,20), set(c,2)?
+
 :-modeh(*,woman(+person))?
 :-modeb(*,female(+person))?
 :-modeb(*,male(+person))?

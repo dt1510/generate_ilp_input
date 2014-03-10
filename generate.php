@@ -1,5 +1,5 @@
 <?php
-$ilp_systems = array("progol", "toplog");
+$ilp_systems = array("progol", "toplog", "tal");
 //Generator of the ILP learning problems for different ILP systems from a universal script.
 //Takes as input arguments a universal learning problem.
 
@@ -64,7 +64,18 @@ function init_script($ilp_system) {
         case "progol":
             return ":- set(i,2), set(h,20), set(c,2)?\n";
         break;
+        case "toplog":break;
+        case "tal":
+            return ":- multifile option/2.\n".
+                    "option(max_body_literals, 2).\n".
+                    "option(score_before_condition, false).\n".
+                    "option(max_num_rules, 2).\n".
+                    "option(single_seed, false).\n".
+                    "option(strategy, full_breadth).\n".
+                    "option(max_depth, 200).\n";
+        break;
     }
+    return "";
 }
 
 function convert_system($ilp_system, $line) {
@@ -74,6 +85,9 @@ function convert_system($ilp_system, $line) {
             $line=preg_replace("/modeh\(/", ":-modeh(*,",$line);
             $line=preg_replace("/modeb\(/", ":-modeb(*,",$line);
             $line=preg_replace("/determination\(/", ":-determination(",$line);
+            if(preg_match("/dynamic/",$line)) {
+                return "";
+            }
             return $line."\n";
         break;
         
@@ -82,7 +96,18 @@ function convert_system($ilp_system, $line) {
             $line=preg_replace("/modeb\(/", ":-modeb(",$line);
             if(preg_match("/determination\(/",$line)) {
                 return "";
+            }
+            if(preg_match("/^dynamic/",$line)) {
+                return "";
             }            
+            return $line."\n";
+        break;
+        
+        case "tal":
+            $line=preg_replace("/dynamic/", ":-dynamic",$line);
+            if(preg_match("/determination\(/",$line)) {
+                return "";
+            }
             return $line."\n";
         break;
     }
@@ -103,6 +128,7 @@ function convert_positive($ilp_system, $line) {
     switch($ilp_system) {
         case "progol":break;
         case "toplog":
+        case "tal":
             if(contains_example($line)) {
                 return toplog_positive($line);
             }
@@ -117,6 +143,7 @@ function convert_negative($ilp_system, $line) {
             return progol_negative($line);
         break;
         case "toplog":
+        case "tal":
             if(contains_example($line)) {
                 return toplog_negative($line);
             }

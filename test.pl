@@ -1,3 +1,5 @@
+dynamic woman/1, female/1, male/1.
+
 modeh(woman(+person)).
 modeb(female(+person)).
 modeb(male(+person)).
