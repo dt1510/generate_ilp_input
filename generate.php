@@ -1,5 +1,5 @@
 <?php
-$ilp_systems = array("progol", "toplog", "tal");
+$ilp_systems = array("progol", "toplog", "tal","imparo");
 //Generator of the ILP learning problems for different ILP systems from a universal script.
 //Takes as input arguments a universal learning problem.
 
@@ -17,6 +17,8 @@ function create_conversion($learning_problem, $learning_problem_name, $ilp_syste
     $system="";$type="";$background="";$positive="";$negative="";
     $system=init_script($ilp_system);
     $part="system";
+    $modeh_declarations=array();
+    $modeb_declarations=array();
     for($i=0; $i<count($lines); $i++) {
         if(preg_match('/%background/',$lines[$i])) {
             $part="background";
@@ -29,15 +31,46 @@ function create_conversion($learning_problem, $learning_problem_name, $ilp_syste
         }
         
         switch($part) {
-            case "system": $system.=convert_system($ilp_system,$lines[$i]);break;
+            case "system": $system.=convert_system($ilp_system,$lines[$i]);
+                if(preg_match("/modeh\(/",$lines[$i])) {
+                    $mode_dec = preg_replace("/modeh\(/","",$lines[$i]);
+                    $mode_dec = preg_replace("/\)[.]/","",$mode_dec);
+                    array_push($modeh_declarations,$mode_dec);
+                }
+                
+                if(preg_match("/modeb\(/",$lines[$i])) {
+                    $mode_dec = preg_replace("/modeb\(/","",$lines[$i]);
+                    $mode_dec = preg_replace("/\)[.]/","",$mode_dec);
+                    array_push($modeb_declarations,$mode_dec);
+                }
+            break;
             case "type": $type.=convert_type($ilp_system,$lines[$i]);break;
             case "background": $background.=convert_background($ilp_system,$lines[$i]);break;
             case "positive": $positive.=convert_positive($ilp_system,$lines[$i]);break;
             case "negative": $negative.=convert_negative($ilp_system,$lines[$i]);break;
         }
     }
+    
+    if($ilp_system=="imparo") {
+        $system.="head_modes([".list_array($modeh_declarations)."]).\n";
+        $system.="body_modes([".list_array($modeb_declarations)."]).\n";
+        $background="%file%imb\n".$background;
+        $positive="%file%imx\n".$positive;
+    }
 
     output_learning_problem($learning_problem_name, $ilp_system, $system, $type, $background, $positive, $negative);
+}
+
+function list_array($array) {
+    if(count($array)>0) {
+        $list=$array[0];
+    } else {
+        $list="";
+    }
+    for($i=1; $i<count($array); $i++) {
+        $list.=",".$array[$i];
+    }
+    return $list;
 }
 
 function output_learning_problem($learning_problem_name, $ilp_system, $system, $type, $background, $positive, $negative) {
@@ -110,6 +143,9 @@ function convert_system($ilp_system, $line) {
             }
             return $line."\n";
         break;
+        case "imparo":
+            return "";
+        break;
     }
     return $line."\n";
 }
@@ -140,6 +176,7 @@ function convert_positive($ilp_system, $line) {
 function convert_negative($ilp_system, $line) {
     switch($ilp_system) {
         case "progol":
+        case "imparo":
             return progol_negative($line);
         break;
         case "toplog":
