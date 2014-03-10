@@ -1,8 +1,8 @@
 %test
 :- set(i,2), set(h,20), set(c,2)?
-:-modeh(*, woman(+person))?
-:-modeb(*, female(+person))?
-:-modeb(*, male(+person))?
+:-modeh(*,woman(+person))?
+:-modeb(*,female(+person))?
+:-modeb(*,male(+person))?
 
 :-determination(woman/1, female/1)?
 :-determination(woman/1, male/1)?

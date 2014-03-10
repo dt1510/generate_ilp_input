@@ -9,7 +9,7 @@ $learning_problem=file_get_contents($learning_problem_file);
 $lines=split("\n",$learning_problem);
 //A learning problem should be divided into parts: system, types declarations, background knowledge, positive examples, negative examples
 
-$ilp_system="progol";
+$ilp_system="toplog";
 $system="";$type="";$background="";$positive="";$negative="";
 $system=init_script($ilp_system);
 $part="system";
@@ -48,7 +48,7 @@ function output_learning_problem($learning_problem_name, $ilp_system, $system, $
     $data.=$positive;
     $data.=$negative;
     echo $data;
-    //file_put_contents($ilp_system."_".$learning_problem_name.".pl", $data);
+    file_put_contents($ilp_system."_".$learning_problem_name.".pl", $data);
 }
 
 
@@ -65,9 +65,18 @@ function convert_system($ilp_system, $line) {
     switch($ilp_system) {
         case "progol":
             $line=preg_replace("/[.]/","?",$line);            
+            $line=preg_replace("/modeh\(/", ":-modeh(*,",$line);
+            $line=preg_replace("/modeb\(/", ":-modeb(*,",$line);
+            $line=preg_replace("/determination\(/", ":-determination(",$line);
+            return $line."\n";
+        break;
+        
+        case "toplog":
             $line=preg_replace("/modeh\(/", ":-modeh(",$line);
             $line=preg_replace("/modeb\(/", ":-modeb(",$line);
-            $line=preg_replace("/determination\(/", ":-determination(",$line);
+            if(preg_match("/determination\(/",$line)) {
+                return "";
+            }            
             return $line."\n";
         break;
     }
@@ -94,13 +103,40 @@ function convert_positive($ilp_system, $line) {
 function convert_negative($ilp_system, $line) {
     switch($ilp_system) {
         case "progol":
-            if(preg_match("/^[a-zA-Z]/",$line)) {
-                $line=":-".$line;
-            }                   
-            return $line."\n";
+            return progol_negative($line);
+        break;
+        case "toplog":
+            return toplog_negative($line);
         break;
     }
     return $line."\n";
+}
+
+function progol_negative($line) {
+    if(contains_example($line)) {
+        $line=":-".$line;
+    }                   
+    return $line."\n"; 
+}
+
+function toplog_positive($line) {
+    return toplog_example($line,1);
+}
+
+function toplog_negative($line) {
+    return toplog_example($line,-1);
+}
+
+function toplog_example($line,$weight) {
+    if(contains_example($line)) {
+        $example=preg_replace("/[.]/","?",$line);  
+        return "example($example,$weight).\n";
+    } else
+        return "";
+}
+
+function contains_example($line) {
+    return preg_match("/^[a-zA-Z]/",$line);
 }
 
 ?>

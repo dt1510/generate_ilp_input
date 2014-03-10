@@ -1,6 +1,6 @@
-modeh(*, woman(+person)).
-modeb(*, female(+person)).
-modeb(*, male(+person)).
+modeh(woman(+person)).
+modeb(female(+person)).
+modeb(male(+person)).
 
 determination(woman/1, female/1).
 determination(woman/1, male/1).
