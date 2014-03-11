@@ -1,5 +1,13 @@
 <?php
-$ilp_systems = array("progol", "toplog", "tal","imparo");
+$ilp_systems = array("progol", "toplog", "tal","imparo","aleph");
+//where the files for ILP systems should be copied
+$default_location = array(
+"progol" => "/home/david/Dropbox/Individual project/progol/examples",
+"toplog" => "/home/david/Dropbox/Individual project/toplog/examples",
+"tal" => "/home/david/Dropbox/Individual project/tal/examples",
+"imparo" => "/home/david/Dropbox/Individual project/imparo/examples",
+"aleph" => "/home/david/Dropbox/Individual project/aleph"
+);
 //Generator of the ILP learning problems for different ILP systems from a universal script.
 //Takes as input arguments a universal learning problem.
 
@@ -57,6 +65,10 @@ function create_conversion($learning_problem, $learning_problem_name, $ilp_syste
         $background="%file%imb\n".$background;
         $positive="%file%imx\n".$positive;
     }
+    if($ilp_system=="aleph") {
+        $positive="%file%f\n".$positive;
+        $negative="%file%n\n".$negative;
+    }
 
     output_learning_problem($learning_problem_name, $ilp_system, $system, $type, $background, $positive, $negative);
 }
@@ -74,6 +86,7 @@ function list_array($array) {
 }
 
 function output_learning_problem($learning_problem_name, $ilp_system, $system, $type, $background, $positive, $negative) {
+    global $default_location;
     switch($ilp_system) {
         case "progol":break;
     }        
@@ -84,16 +97,21 @@ function output_learning_problem($learning_problem_name, $ilp_system, $system, $
     $data.=$background;
     $data.=$positive;
     $data.=$negative;
-    //echo $data;
-    $file_name=$ilp_system."_".$learning_problem_name.".pl";
+    //echo $data;    
+    switch($ilp_system) {
+        case "imparo":$suffix=".im";break;
+        default:$suffix=".pl";
+    }
+    $file_name=$ilp_system."_".$learning_problem_name.$suffix;
     echo $file_name."\n";
-    file_put_contents($file_name, $data);
+    file_put_contents($default_location[$ilp_system]."/".$file_name, $data);
 }
 
 
 
 function init_script($ilp_system) {
     switch($ilp_system) {
+        case "aleph":break;
         case "progol":
             return ":- set(i,2), set(h,20), set(c,2)?\n";
         break;
@@ -107,12 +125,27 @@ function init_script($ilp_system) {
                     "option(strategy, full_breadth).\n".
                     "option(max_depth, 200).\n";
         break;
+        case "imparo":
+            return ":-set_max_clause_length(5).\n".
+                    ":-set_max_clauses(5).\n".
+                    ":-set_connected(5).\n".
+                    ":-set_max_var_depth(5).\n";
+        break;
     }
     return "";
 }
 
 function convert_system($ilp_system, $line) {
     switch($ilp_system) {
+        case "aleph":
+            $line=preg_replace("/modeh\(/", ":-modeh(*,",$line);
+            $line=preg_replace("/modeb\(/", ":-modeb(*,",$line);
+            $line=preg_replace("/determination\(/", ":-determination(",$line);
+            if(preg_match("/dynamic/",$line)) {
+                return "";
+            }
+            return $line."\n";
+        break;
         case "progol":
             $line=preg_replace("/[.]/","?",$line);            
             $line=preg_replace("/modeh\(/", ":-modeh(*,",$line);
@@ -162,6 +195,7 @@ function convert_background($ilp_system, $line) {
 
 function convert_positive($ilp_system, $line) {
     switch($ilp_system) {
+        case "aleph":break;
         case "progol":break;
         case "toplog":
         case "tal":
@@ -175,6 +209,7 @@ function convert_positive($ilp_system, $line) {
 
 function convert_negative($ilp_system, $line) {
     switch($ilp_system) {
+        case "aleph":break;
         case "progol":
         case "imparo":
             return progol_negative($line);
