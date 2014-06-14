@@ -4,7 +4,7 @@ modeh(brother(+person,+person)).
 modeh(parent(+person,+person)).
 modeb(sibling(+person,+person)).
 modeb(male(+person)).
-modeb(father(+person,+person)).
+modeb(father(+person,+person)).//Modify to allow input.
 
 determination(brother/2, sibling/2).
 determination(brother/2, male/1).

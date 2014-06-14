@@ -1,4 +1,7 @@
 <?php
+//Usage: php generate.php learning_problem.pl
+
+//The program will automatically generate the corresponding translations for the supported ILP systems.
 $ilp_systems = array("progol", "toplog", "tal","imparo","aleph");
 //where the files for ILP systems should be copied
 $default_location = array(
@@ -126,9 +129,9 @@ function init_script($ilp_system) {
                     "option(max_depth, 200).\n";
         break;
         case "imparo":
-            return ":-set_max_clause_length(5).\n".
+            return ":-set_max_clause_length(15).\n".
                     ":-set_max_clauses(5).\n".
-                    ":-set_connected(5).\n".
+                    ":-set_connected(1).\n".//boolean
                     ":-set_max_var_depth(5).\n";
         break;
     }

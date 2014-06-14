@@ -7,15 +7,15 @@ determination(woman/1, female/1).
 
 %type information
 person(jane).
-person(susan).
-person(mary).
 
 %background knowledge
+female(jane).
+:-female(jane).
 
 %positive examples
-woman(jane) :- female(jane).
-woman(susan) :- female(susan).
-woman(mary) :- female(mary).
+woman(jane).
+woman(susan).
+woman(mary).
 
 %negative examples
 
